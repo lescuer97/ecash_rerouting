@@ -23,21 +23,21 @@ const (
 
 const (
 	REBALANCING_ATTEMPT = 42069
-	REBALANCING_PUBKEY = 42070
+	REBALANCING_PUBKEY  = 42070
 )
 
 type ECASH_REBALANCE_REQUEST_REQUEST struct {
-	AmountMsat         uint64
-    Id uuid.UUID
+	AmountMsat uint64
+	Id         uuid.UUID
 }
 
 type ECASH_REBALANCE_REQUEST_RESPONSE struct {
 	Pubkey []byte
-    Id uuid.UUID
+	Id     uuid.UUID
 }
 
 type ECASH_REBALANCE_REQUEST struct {
-	LockedProofs         cashu.Token
+	LockedProofs   cashu.Token
 	InvoiceRequest string
 }
 

@@ -5,14 +5,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"os"
-	"sync"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/lescuer97/ecash_rerouting/internal/communication"
 	"github.com/lescuer97/ecash_rerouting/internal/wallet"
+	"io"
+	"log"
+	"os"
+	"sync"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
@@ -20,7 +20,6 @@ import (
 )
 
 func IsEnoughLiquidity(chanStatus *lnrpc.Channel, htlc *routerrpc.ForwardHtlcInterceptRequest) bool {
-
 
 	if (chanStatus.LocalBalance * 1000) < int64(htlc.OutgoingAmountMsat) {
 		return false
@@ -45,13 +44,13 @@ func ChannelByPeerId(channels *lnrpc.ListChannelsResponse, chanId uint64) *lnrpc
 }
 
 type RebalancingStates struct {
-    states map[uuid.UUID]RebalanceAttempt
-    sync.Mutex
+	states map[uuid.UUID]RebalanceAttempt
+	sync.Mutex
 }
 
 type RebalanceAttempt struct {
-    Approved bool
-    Amount  uint64
+	Approved bool
+	Amount   uint64
 }
 
 func main() {
@@ -79,16 +78,12 @@ func main() {
 	done := make(chan bool)
 	fmt.Println("Channel interceptor running")
 
-    wallet, err := wallet.SetUpWallet(".", os.Getenv(wallet.ACTIVE_MINT))
+	wallet, err := wallet.SetUpWallet(".", os.Getenv(wallet.ACTIVE_MINT))
 	if err != nil {
 		log.Fatalf("wallet.SetUpWallet(os.Getenv(wallet.WALLET_DB_1), os.Getenv(wallet.ACTIVE_MINT)): %v", err)
 	}
 
-
-
-    
-
-    thread :=   ListenToCustomLightningMessages(ctx,lnClient, wallet)
+	thread := ListenToCustomLightningMessages(ctx, lnClient, wallet)
 	go func() {
 		for {
 			resp, err := stream.Recv()
@@ -140,16 +135,14 @@ func main() {
 				log.Fatalf("hex.DecodeString(channel.RemotePubkey) %v", err)
 			}
 
-            rebalanceReq := communication.ECASH_REBALANCE_REQUEST_REQUEST {
-                AmountMsat: 10,
+			rebalanceReq := communication.ECASH_REBALANCE_REQUEST_REQUEST{
+				AmountMsat: 10,
+			}
 
-            }
-
-            bytes, err := json.Marshal(rebalanceReq)
+			bytes, err := json.Marshal(rebalanceReq)
 			if err != nil {
 				log.Fatalf("json.Marshal(rebalanceReq) %v", err)
 			}
-            
 
 			customRequest := lnrpc.SendCustomMessageRequest{
 				Type: communication.REBALANCING_ATTEMPT,
@@ -162,9 +155,6 @@ func main() {
 			if err != nil {
 				log.Fatalf("cannot send custom message %v", err)
 			}
-
-            // time.Sleep()
-
 
 			fmt.Println("continuing payment")
 			response := &routerrpc.ForwardHtlcInterceptResponse{
@@ -180,7 +170,7 @@ func main() {
 	}()
 
 	<-done //we will wait until all response is received
-    <-thread
+	<-thread
 	log.Printf("finished")
 
 }
