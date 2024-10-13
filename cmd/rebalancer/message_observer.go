@@ -36,6 +36,7 @@ func ListenToCustomLightningMessages(ctx context.Context, lnClient lnrpc.Lightni
 			switch resp.Type {
 			case communication.REBALANCING_ATTEMPT:
 				log.Printf("\n received message: %v \n NICE \n", communication.REBALANCING_ATTEMPT)
+				log.Printf("\nYOUR PARTNER WANTS TO GIVE YOU SOME NUT \n")
 
 				var rebalanceReq communication.ECASH_REBALANCE_REQUEST_REQUEST
 
