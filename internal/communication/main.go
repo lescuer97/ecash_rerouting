@@ -1,52 +1,69 @@
 package communication
 
 import (
-	// "crypto/rand"
-	// "errors"
-	// "fmt"
-	// "time"
-
-	// "github.com/lightningnetwork/lnd"
-	// "github.com/lightningnetwork/lnd/lnrpc"
-	// "github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
-	// "github.com/lightningnetwork/lnd/lntypes"
-	// "github.com/lightningnetwork/lnd/lnwire"
 	"crypto/x509"
 	"fmt"
 	"log"
-	"os"
 
+	"github.com/elnosh/gonuts/cashu"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
 
 const (
-	LND_HOST     = "LND_GRPC_HOST"
-	LND_TLS_CERT = "LND_TLS_CERT"
-	LND_MACAROON = "LND_MACAROON"
+	LND_HOST_1     = "LND_GRPC_HOST_1"
+	LND_TLS_CERT_1 = "LND_TLS_CERT_1"
+	LND_MACAROON_1 = "LND_MACAROON_1"
+
+	LND_HOST_2     = "LND_GRPC_HOST_2"
+	LND_TLS_CERT_2 = "LND_TLS_CERT_2"
+	LND_MACAROON_2 = "LND_MACAROON_2"
 )
+
+const (
+	REBALANCING_ATTEMPT = 42069
+	REBALANCING_PUBKEY = 42070
+)
+
+type ECASH_REBALANCE_REQUEST_REQUEST struct {
+	AmountMsat         uint64
+    Id uuid.UUID
+}
+
+type ECASH_REBALANCE_REQUEST_RESPONSE struct {
+	Pubkey []byte
+    Id uuid.UUID
+}
+
+type ECASH_REBALANCE_REQUEST struct {
+	LockedProofs         cashu.Token
+	InvoiceRequest string
+}
+
+type ECASH_REBALANCE_ATTEMPT_RESPONSE struct {
+	Pubkey []byte
+	// InvoiceRequest string
+}
 
 type LightingComms struct {
 	LndRpcClient *grpc.ClientConn
 	Macaroon     string
 }
 
-func SetUpLightningComms() (*LightingComms, error) {
+func SetUpLightningComms(host string, pem_cert string, macaroon string) (*LightingComms, error) {
 	lightningComs := LightingComms{}
-
-	host := os.Getenv(LND_HOST)
 
 	if host == "" {
 		return nil, fmt.Errorf("LND_GRPC_HOST not available")
 	}
-
-	pem_cert := os.Getenv(LND_TLS_CERT)
 
 	if pem_cert == "" {
 		return nil, fmt.Errorf("LND_CERT_PATH not available")
 	}
 
 	certPool := x509.NewCertPool()
+
 	appendOk := certPool.AppendCertsFromPEM([]byte(pem_cert))
 
 	if !appendOk {
@@ -67,8 +84,6 @@ func SetUpLightningComms() (*LightingComms, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	macaroon := os.Getenv(LND_MACAROON)
 
 	if macaroon == "" {
 		return nil, fmt.Errorf("LND_MACAROON_PATH not available")
